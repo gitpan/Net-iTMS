@@ -1,3 +1,16 @@
+0.04 -> 0.10
+
+    * HUGE rearrangement/rewrite of code.  Refactored by creating Request,
+      Album, Artist, Genre, and Song objects.  Data is fetched efficiently
+      and transparently.  Still missing some parts -- see the TODO section
+      in Net::iTMS's POD -- but these will be easy to implement.
+    
+    * See all the doc for more usage info.  It's dead easy.
+        perldoc Net::iTMS
+        perldoc Net::iTMS::Artist
+        perldoc Net::iTMS::Album
+        perldoc ...
+
 0.03a -> 0.04
     
     * Bug fixes in Net::iTMS::XML -- still are probably a bunch of edge

@@ -1,4 +1,4 @@
-On *nix:
+INSTALL
 
     perl Build.PL
     ./Build
@@ -14,5 +14,6 @@ and/or
 
     --install_path libdoc=~/man/man3
 
-options to the install step.  See the Module::Build doc for more
-information.
+options to the install step.  The above paths are just examples.
+See the Module::Build documentation for more information.
+
