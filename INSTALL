@@ -3,7 +3,7 @@ On *nix:
     perl Build.PL
     ./Build
     ./Build test    (doesn't do anything right now, no tests defined)
-    ./Build install
+    ./Build install (as root to install system-wide)
 
 To install to a different directory (if you're not root, for example),
 use the

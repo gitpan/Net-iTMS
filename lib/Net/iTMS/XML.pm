@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 require XML::Twig;
 
@@ -454,6 +454,177 @@ sub artist {
     return $info;
 }
 
+=item C<< artistBiography >>
+
+Returns an arrayref, each element being a paragraph in the artist's bio.
+Undefined results if called on XML not from a biography request.
+
+Options
+
+=over 24
+
+=item createAlbumLinks => '/some/url?id='
+
+If this option is set, it translates links to albums in the XML into
+HTML links.  The albumId is prepended to the URL passed as the value
+of the option.
+
+The default is to simply ignore the links, leaving the plain text
+title.
+
+=back
+
+=cut
+sub artistBiography {
+    my ($self, %opt) = @_;
+    my $root = $self->{twig}->root;
+        
+    $opt{cleanup} = defined $opt{cleanup}
+                        ? $opt{cleanup}
+                        : 1;
+    
+    my $info = [ ];
+    
+    my $SV = $root->first_child('ScrollView');
+    
+    my $tv = $SV->first_child('MatrixView')
+                ->first_child('View')
+                ->first_child('VBoxView')
+                ->first_child('TextView');
+    
+    for ($tv->next_siblings('TextView')) {
+        my $t = $_->first_child('SetFontStyle');
+        next if not defined $t;
+        
+        my $text;
+        if (defined $opt{createAlbumLinks}) {
+            for ($t->children('ViewAlbum')) {
+                my $id = $_->att('id');
+                $_->del_atts;
+                $_->set_name('a');
+                $_->set_att(href => "$opt{createAlbumLinks}$id");
+                $_->set_att(class => 'viewAlbum');
+                $_->set_text($_->trimmed_text);
+            }
+            $text = $t->xml_string;
+        } else {
+            $text = $t->xml_text;
+        }        
+        push @$info, $text
+            unless $text eq '';
+    }
+    
+    $SV->delete if $opt{cleanup};
+    
+    return $info;
+}
+
+=item C<< genericPlist >>
+
+Processes a generic plist in the XML and returns an arrayref of hashrefs
+containing the information.
+
+=cut
+sub genericPlist {
+    my ($self, %opt) = @_;
+    my $root = $self->{twig}->root;
+    
+    $opt{cleanup} = defined $opt{cleanup}
+                        ? $opt{cleanup}
+                        : 1;
+    
+    # The plist
+    my $plist = ($root->descendants('plist'))[0];
+    
+    my $array = $plist->first_child('dict')
+                      ->first_child('array');
+    my $info = [ ];
+    
+    for my $dict ($array->children('dict')) {
+        my $data = { };
+        for my $key ($dict->children('key')) {
+            $data->{$key->trimmed_text} = $key->next_sibling->trimmed_text;
+        }
+        push @$info, $data;
+    }
+
+    $plist->delete if $opt{cleanup};
+
+    return $info;
+}
+
+=item C<< influentialAlbums >>
+
+Returns an arrayref of hashrefs of information about the influential
+albums.  Undefined results if called on XML not from an influencers
+request.
+
+=cut
+sub influentialAlbums {
+    my ($self, %opt) = @_;
+    my $root = $self->{twig}->root;
+    
+    $opt{cleanup} = defined $opt{cleanup}
+                        ? $opt{cleanup}
+                        : 1;
+    
+    my $info = [ ];
+    
+    my $SV = $root->first_child('ScrollView');
+    
+    my $mv = $SV->first_child('MatrixView')
+                ->first_child('View')
+                ->first_child('MatrixView')
+                ->first_child('VBoxView')
+                ->first_child('MatrixView');
+    
+    if (defined $mv) {
+        for my $hbox ($mv->children('HBoxView')) {
+            for my $vbox ($hbox->children('VBoxView')) {
+                my $album  = $vbox->first_child('MatrixView')
+                                  ->first_child('ViewAlbum');
+
+                next if not defined $album;
+
+                my %tmp = (
+                    title   => $album->att('draggingName'),
+                    id      => $album->att('id'),
+                    playlistId => $album->att('id'),
+                    cover   => { },
+                    artist  => { },
+                );
+
+                if (my $pic = $album->first_child('PictureView')) {
+                    $tmp{cover} = {
+                        height => $pic->att('height'),
+                        width  => $pic->att('width'),
+                        url    => $pic->att('url'),
+                    };
+                }
+                
+                my $artist = $vbox->first_child('MatrixView')
+                                  ->first_child('VBoxView')
+                                  ->first_child('TextView')
+                                  ->first_child('SetFontStyle')
+                                  ->first_child('ViewArtist');
+                
+                if (defined $artist) {
+                    $tmp{artist} = {
+                        id   => $artist->att('id'),
+                        name => $artist->trimmed_text,
+                    };
+                }
+                
+                push @$info, \%tmp;
+            }
+        }
+    }
+    
+    $SV->delete if $opt{cleanup};
+    
+    return $info;
+}
+
 =item C<< purge >>
 
 Purges the current root twig.
@@ -468,6 +639,8 @@ sub purge {
 
 =head1 LICENSE
 
+Copyright 2004, Thomas R. Sibley.
+
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-ShareAlike License. To view a copy of this
 license, visit L<http://creativecommons.org/licenses/by-nc-sa/1.0/>
@@ -479,7 +652,7 @@ or send a letter to:
 
 =head1 AUTHOR
 
-Copyright (C) 2004, Thomas R. Sibley - L<http://zulutango.org:82/>.
+Thomas R. Sibley, L<http://zulutango.org:82/>
 
 =head1 SEE ALSO
 

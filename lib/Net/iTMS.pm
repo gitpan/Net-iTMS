@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -103,8 +103,21 @@ sub new {
             viewArtist => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewArtist?artistId=',
             biography => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.app.store.DirectAction/biography?artistId=',
             influencers => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.app.store.DirectAction/influencers?artistId=',
+            browseArtist => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.app.store.DirectAction/browseArtist?artistId=',
         },
     }, $class;
+}
+
+=item C<search_for($terms)>
+
+Does a simple search of the catalog.
+
+=cut
+sub search_for {
+    my ($self, $query) = @_;
+    
+    # Decrypted, uncompressed XML is returned
+    return $self->fetch_iTMS_info($self->_url('search') . $query);
 }
 
 =item C<get_album($albumId)>
@@ -133,16 +146,46 @@ sub get_artist {
             : $self->_set_error('No artist ID passed.');
 }
 
-=item C<search_for($terms)>
+=item C<get_biography($artistId)>
 
-Does a simple search of the catalog.
+Takes an artistId and fetches the artist's iTMS biography, if there
+is one.
 
 =cut
-sub search_for {
-    my ($self, $query) = @_;
+sub get_biography {
+    my ($self, $id) = @_;
     
-    # Decrypted, uncompressed XML is returned
-    return $self->fetch_iTMS_info($self->_url('search') . $query);
+    return $id
+            ? $self->fetch_iTMS_info($self->_url('biography') . $id)
+            : $self->_set_error('No artist ID passed.');
+}
+
+=item C<get_influencers($artistId)>
+
+Takes an artistId and fetches the artist's iTMS influencers, if there
+are any.
+
+=cut
+sub get_influencers {
+    my ($self, $id) = @_;
+    
+    return $id
+            ? $self->fetch_iTMS_info($self->_url('influencers') . $id)
+            : $self->_set_error('No artist ID passed.');
+}
+
+=item C<get_artist_albums($artistId)>
+
+Takes an artistId and fetches all the albums (really a browseArtist
+request).
+
+=cut
+sub get_artist_albums {
+    my ($self, $id) = @_;
+    
+    return $id
+            ? $self->fetch_iTMS_info($self->_url('browseArtist') . $id)
+            : $self->_set_error('No artist ID passed.');
 }
 
 =item C<< fetch_iTMS_info($url, [ gunzip => 1, decrypt => 0 ]) >>
@@ -354,6 +397,8 @@ sub _set_error {
 
 =head1 LICENSE
 
+Copyright 2004, Thomas R. Sibley.
+
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-ShareAlike License. To view a copy of this
 license, visit L<http://creativecommons.org/licenses/by-nc-sa/1.0/>
@@ -365,7 +410,7 @@ or send a letter to:
 
 =head1 AUTHOR
 
-Copyright (C) 2004, Thomas R. Sibley - L<http://zulutango.org:82/>.
+Thomas R. Sibley, L<http://zulutango.org:82/>
 
 =cut
 
