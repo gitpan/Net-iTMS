@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.03';
+$VERSION = '0.08';
 
 use LWP::UserAgent;
 use HTTP::Request;

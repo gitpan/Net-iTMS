@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.03';
+$VERSION = '0.05';
 
 require XML::Twig;
 
