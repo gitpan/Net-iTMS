@@ -1,3 +1,7 @@
+0.12 -> 0.13
+
+    * Minor bugfix in advanced searching (robustness)
+
 0.11 -> 0.12
     
     * Added advanced searching

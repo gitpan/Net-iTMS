@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use base 'Net::iTMS::Search';
 
@@ -93,9 +93,12 @@ sub _get_results_albums {
         }
     }
     
-    my $mv = $tmp->first_child('MatrixView')
-                 ->first_child('MatrixView')
-                 ->first_child('MatrixView');
+    my $mv;
+    
+    eval { $mv = $tmp->first_child('MatrixView')
+                     ->first_child('MatrixView')
+                     ->first_child('MatrixView'); };
+    return if $@;
     
     #
     # This is mostly the same to the code in the regular search except

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use Exporter::Lite;
 @EXPORT = qw(error _debug _set_error);

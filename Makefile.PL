@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME         => 'Net::iTMS',
-   VERSION      => '0.12',
+   VERSION      => '0.13',
    PL_FILES     => {},
    INSTALLDIRS  => 'site',
    PREREQ_PM    => {
