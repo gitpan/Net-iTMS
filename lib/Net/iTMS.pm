@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.07';
+$VERSION = '0.03';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -339,6 +339,7 @@ sub _gunzip_data {
     $self->_debug('Writing gzipped data to temp file...');
     
     my ($fh, $fname) = mkstempt($template, $dir);
+    binmode $fh;    # For win32 users
     print $fh $data;
     $fh->close;
         

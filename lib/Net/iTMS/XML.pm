@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.04';
+$VERSION = '0.03';
 
 require XML::Twig;
 
@@ -329,10 +329,10 @@ sub album {
     }
     
     for my $text ($SV->first_child('MatrixView')
-                        ->first_child('VBoxView')
-                        ->first_child('MatrixView')
-                        ->first_child('VBoxView')
-                        ->children('TextView')) {
+                     ->first_child('VBoxView')
+                     ->first_child('MatrixView')
+                     ->first_child('VBoxView')
+                     ->children('TextView')) {
         if ($text->contains_only_text and $text->trimmed_text ne '') {
             push @{$info->{info}}, $text->trimmed_text;
         }
