@@ -5,7 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
   (
    NAME         => 'Net::iTMS',
-   VERSION      => '0.13',
+   VERSION      => '0.14',
    PL_FILES     => {},
    INSTALLDIRS  => 'site',
    PREREQ_PM    => {
@@ -13,10 +13,9 @@ WriteMakefile
 		    'URI::Escape' => '0',
 		    'Exporter::Lite' => '0',
 		    'XML::Twig' => '0',
-		    'File::MkTemp' => '0',
 		    'Crypt::Rijndael' => '0',
-		    'Test::More' => '0',
 		    'Crypt::CBC' => '0',
+		    'Test::More' => '0',
 		    'LWP::UserAgent' => '0',
 		    'Digest::MD5' => '0',
 		    'HTTP::Request' => '0',

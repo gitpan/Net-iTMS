@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use Net::iTMS::Error;
 
@@ -27,7 +27,9 @@ Net::iTMS::Search - Represents a simple search of the iTunes Music Store
 =head1 DESCRIPTION
 
 Net::iTMS::Search represents a search of the iTMS and encapsulates the
-associated data.
+associated data.  PLEASE NOTE: This simple search is currently broken due
+to unresolvable changes in the iTMS.  Please use L<Net::iTMS::Search::Advanced>,
+which works.
 
 =head2 Methods
 
@@ -98,7 +100,8 @@ sub albums {
 sub _get_results {
     my $self = shift;
     
-    my $twig = $self->{_itms}->{_request}->url('search', $self->{query});
+    my $twig = $self->{_itms}->{_request}->url('search', $self->{query})
+                or return undef;
     my $root = $twig->root;
     
     $self->_get_results_albums($root);
@@ -109,6 +112,9 @@ sub _get_results {
 
 sub _get_results_albums {
     my ($self, $root) = @_;
+
+    # TODO: All this parsing will probably need to be changed like the
+    #       advanced search's.
 
     #
     # Albums
@@ -226,7 +232,7 @@ sub _get_results_tracks {
                     explicit    => $data{explicit},
                     comments    => $data{comments},
                     copyright   => $data{copyright},
-                    preview_url => $data{previewUrl},
+                    preview_url => $data{previewURL},
                     released    => $data{releaseDate},
                     price       => $data{priceDisplay},
                     vendor      => $data{vendorId},

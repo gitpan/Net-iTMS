@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use Net::iTMS::Error;
 use Net::iTMS::Request;
@@ -57,11 +57,6 @@ Takes an argument list of optional C<key => value> pairs.  The options available
 are:
 
 =over 24
-
-=item C<< tmpdir => '/some/path' >>
-
-Used to specify the path to the directory where temporary files should be
-created.  Defaults to L<File::Temp>'s default.
 
 =item C<< debug => 0 or 1 >>
 
@@ -146,6 +141,8 @@ hashref and returns a L<Net::iTMS::Search::Advanced> object.
 
 Otherwise, this method assumes C<$query> to be a string and executes a simple
 search using the string and returns a L<Net::iTMS::Search> object.
+PLEASE NOTE: This simple search does not work at this time due to unresolvable
+changes in the iTMS.  Use the advanced search functionality instead.
 
 =cut
 sub search_for {
@@ -163,10 +160,6 @@ sub search_for {
 
 =head1 TODO
 
-    Net::iTMS::Artist
-        * biography
-        * influencers
-
     Net::iTMS::Genre
         * browse, etc
 
@@ -178,15 +171,16 @@ sub search_for {
 
     Programmatic tests, instead of hand testing by me.
     
-    Better caching (more selective updates)
+    Improved caching (more selective updates)
     
     Redo SYNOPSISes
 
 =head1 BUGS
 
-None known at the current time, but there are bound to be some.
+All bugs, open and resolved, are handled by RT at
+L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Net-iTMS>.
 
-Please report all bugs via RT at
+Please report all bugs via
 L<https://rt.cpan.org/NoAuth/ReportBug.html?Queue=Net-iTMS>.
 
 =head1 LICENSE

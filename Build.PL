@@ -2,7 +2,7 @@ use Module::Build;
 
 Module::Build->new(
     module_name         => 'Net::iTMS',
-    dist_version        => '0.13',
+    dist_version        => '0.14',
     dist_author         => 'Thomas Sibley, http://zulutango.org:82/',
     dist_abstract       => 'Interface to the iTunes Music Store (iTMS)',
     license             => 'perl',
@@ -15,7 +15,6 @@ Module::Build->new(
         'Crypt::CBC'        => 0,
         'Crypt::Rijndael'   => 0,
         'Digest::MD5'       => 0,
-        'File::MkTemp'      => 0,
         'Compress::Zlib'    => 0,
         'XML::Twig'         => 0,
         'Exporter::Lite'    => 0,

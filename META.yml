@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Net-iTMS
-version: 0.13
+version: 0.14
 author:
   - Thomas Sibley, http://zulutango.org:82/
 abstract: Interface to the iTunes Music Store (iTMS)
@@ -11,7 +11,6 @@ requires:
   Crypt::Rijndael: 0
   Digest::MD5: 0
   Exporter::Lite: 0
-  File::MkTemp: 0
   HTTP::Request: 0
   LWP::UserAgent: 0
   URI::Escape: 0
@@ -23,13 +22,13 @@ conflicts: {}
 provides:
   Net::iTMS:
     file: lib/Net/iTMS.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Album:
     file: lib/Net/iTMS/Album.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Artist:
     file: lib/Net/iTMS/Artist.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Error:
     file: lib/Net/iTMS/Error.pm
     version: 0.13
@@ -38,13 +37,13 @@ provides:
     version: 0.13
   Net::iTMS::Request:
     file: lib/Net/iTMS/Request.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Search:
     file: lib/Net/iTMS/Search.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Search::Advanced:
     file: lib/Net/iTMS/Search/Advanced.pm
-    version: 0.13
+    version: 0.14
   Net::iTMS::Song:
     file: lib/Net/iTMS/Song.pm
     version: 0.13

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use base 'Net::iTMS::Search';
 
@@ -62,7 +62,8 @@ sub _get_results {
             if defined $self->{query}->{$_};
     }
     
-    my $twig = $self->{_itms}->{_request}->url('advancedSearch', \%q);
+    my $twig = $self->{_itms}->{_request}->url('advancedSearch', \%q)
+                or return undef;
     my $root = $twig->root;
     
     $self->_get_results_albums($root);
@@ -108,14 +109,14 @@ sub _get_results_albums {
     if (defined $mv) {
         for ($mv->children('VBoxView')) {
             my $album = $_->first_child('MatrixView')
-                          ->first_child('ViewAlbum');
+                          ->first_child('GotoURL');
 
             next if not defined $album;
 
             my %data = (
                 title => $album->att('draggingName'),
             );
-
+            
             if (my $pic = $album->first_child('PictureView')) {
                 $data{thumb} = {
                     height => $pic->att('height'),
@@ -127,10 +128,12 @@ sub _get_results_albums {
             if (my $artist = $_->first_child('MatrixView')
                                ->first_child('VBoxView')
                                ->first_child('TextView')
-                               ->first_child('ViewArtist')) {
+                               ->first_child('GotoURL')) {
+
+                my ($id) = $artist->att('url') =~ /artistId=(\d+)\z/;
 
                 $data{artist} = $self->{_itms}->get_artist(
-                                    $artist->att('id'),
+                                    $id,
                                     name => $artist->trimmed_text,
                                 );
 
@@ -138,8 +141,7 @@ sub _get_results_albums {
                                        ->next_sibling('TextView')
                                        ->first_child('ViewGenre')) {
 
-                    my $name = $genre->trimmed_text;
-                    $name =~ s/^Genre:\s+//i;
+                    my ($name) = $genre->trimmed_text =~ /^Genre:\s+(.+)$/i;
 
                     $data{genre} = $self->{_itms}->get_artist(
                                         $genre->att('id'),
@@ -148,9 +150,11 @@ sub _get_results_albums {
                 }
             }
             
+            my ($id) = $album->att('url') =~ /playListId=(\d+)\z/;
+            
             push @{$self->{albums}},
                  $self->{_itms}->get_album(
-                    $album->att('id'),
+                    $id,
                     %data,
                  );
         }

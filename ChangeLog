@@ -1,3 +1,15 @@
+0.13 -> 0.14
+
+    * Bugfixes in advanced search and artist parsing and general
+      requests
+	
+    * Note about broken simple search (Net::iTMS::Search) and other
+      documentation updates
+
+    * Changed previewUrl to previewURL (RT #12008)
+        
+    * Added artist biographies and influences
+
 0.12 -> 0.13
 
     * Minor bugfix in advanced searching (robustness)

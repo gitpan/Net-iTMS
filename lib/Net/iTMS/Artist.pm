@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use Net::iTMS::Error;
 
@@ -80,6 +80,7 @@ sub new {
         error => '',
         debug => defined $itms->{debug} ? $itms->{debug} : 0,
         _itms => $itms,
+        create_album_links => undef,
     }, $class;
     
     if (%prefill) {
@@ -129,19 +130,41 @@ which is represented in Perl by:
 
 This is pretty much only useful if you're trying to imitate the iTunes interface.
 
-=item selected_albums
+=item best_sellers
 
 Returns an array or arrayref (depending on context) of L<Net::iTMS::Album> objects
-for a selection of albums by the artist (currently ordered by best selling).
-
-=item total_albums
-
-Returns the total number of albums by this artist available in the iTMS.
+for a selection of the best selling albums by the artist.
 
 =item discography
 
+=item albums
+
 Returns an array or arrayref (depending on context) of L<Net::iTMS::Album> objects
 for all the albums of the artist available on the iTMS.
+
+=item biography
+
+Returns an array or arrayref (depending on context) where each element is a paragraph
+in the artist's iTMS bio.
+
+Options
+
+=over 24
+
+=item create_album_links => '/some/url?id='
+
+If this option is set, iTMS links to albums within the bio will be translated
+into HTML links.  The albumId is prepended to the URL passed as the value
+of the option.
+
+The default is to simply ignore the links, leaving the plain text title.
+
+=back
+
+=item influences
+
+Returns an array or arrayref (depending on context) of L<Net::iTMS::Album> objects
+for the albums/artists which influenced the artist, according to the iTMS.
 
 =cut
 sub id { return $_[0]->{id} }
@@ -174,18 +197,11 @@ sub path {
     return wantarray ? @{$self->{path}} : $self->{path};
 }
 
-sub selected_albums {
+sub best_sellers {
     my $self = shift;
     $self->_get_basic_info
-        if not exists $self->{selected_albums};
-    return wantarray ? @{$self->{selected_albums}} : $self->{selected_albums};
-}
-
-sub total_albums {
-    my $self = shift;
-    $self->_get_basic_info
-        if not exists $self->{total_albums};
-    return $self->{total_albums};
+        if not exists $self->{best_sellers};
+    return wantarray ? @{$self->{best_sellers}} : $self->{best_sellers};
 }
 
 sub discography {
@@ -193,6 +209,36 @@ sub discography {
     $self->_get_discography
         if not exists $self->{discography};
     return wantarray ? @{$self->{discography}} : $self->{discography};
+}
+
+sub albums { return shift->discography; }
+
+sub biography {
+    my $self = shift;
+    my %opt  = @_;
+    
+    no warnings 'uninitialized';
+    
+    if ($self->{create_album_links} ne $opt{create_album_links}
+          || not exists $self->{biography}) {
+
+        use warnings 'uninitialized';
+        
+        $self->_get_biography($opt{create_album_links});
+    }
+            
+    $self->{create_album_links} = defined $opt{create_album_links}
+                                        ? $opt{create_album_links}
+                                        : undef;
+    
+    return wantarray ? @{$self->{biography}} : $self->{biography};
+}
+
+sub influences {
+    my $self = shift;
+    $self->_get_influential_albums
+        if not exists $self->{influences};
+    return wantarray ? @{$self->{influences}} : $self->{influences};
 }
 
 #
@@ -247,9 +293,21 @@ sub _get_basic_info {
         if defined $website;
     
     #
-    # Selected albums
+    # Best sellers (what we select by default)
     #
-    $self->{selected_albums} = [ ];
+    $self->{best_sellers} = $self->_get_selected_albums($twig);
+    
+    $sv->delete;
+    $twig->purge;
+}
+
+sub _get_selected_albums {
+    my ($self, $twig) = @_;
+
+    my @albums;
+
+    my $root = $twig->root;
+    my $sv   = $root->first_child('ScrollView');
     
     my $grid = $sv->first_child('MatrixView')
                   ->first_child('View')
@@ -260,14 +318,14 @@ sub _get_basic_info {
     if (defined $grid) {
         for my $hbox ($grid->children('HBoxView')) {
             for my $vbox ($hbox->children('VBoxView')) {
-                my $xml = $vbox->first_child('MatrixView')
-                               ->first_child('ViewAlbum');
+                my $goto = $vbox->first_child('MatrixView')
+                                ->first_child('GotoURL');
 
-                next if not defined $xml;
+                next if not defined $goto;
 
                 my $thumb = { };
 
-                if (my $pic = $xml->first_child('PictureView')) {
+                if (my $pic = $goto->first_child('PictureView')) {
                     $thumb = {
                         height => $pic->att('height'),
                         width  => $pic->att('width'),
@@ -275,40 +333,22 @@ sub _get_basic_info {
                     };
                 }
                 
-                push @{$self->{selected_albums}},
+                my ($id) = $goto->att('url') =~ /playListId=(\d+)\z/;
+                
+                push @albums,
                      $self->{_itms}->get_album(
-                            $xml->att('id'),
-                            title  => $xml->att('draggingName'),
+                            $id,
+                            title  => $goto->att('draggingName'),
                             artist => $self,
                             thumb  => $thumb,
                      );
             }
         }
     }
-    
-    # Get range of albums if there is one
-    for my $r ($sv->first_child('MatrixView')
-                  ->first_child('View')
-                  ->first_child('MatrixView')
-                  ->first_child('VBoxView')
-                  ->descendants('B')) {
-        if ($r->trimmed_text =~ /^Albums: (\d+)-(\d+) of (\d+)$/) {
-            $self->{selected_albums_start} = $1;
-            $self->{selected_albums_end}   = $2;
-            $self->{total_albums}          = $3;
-        }
-    }
-    
-    $self->{total_albums} = scalar @{$self->{selected_albums}}
-        if not $self->{total_albums};
-        
-    $sv->delete;
-    $twig->purge;
+
+    return \@albums;
 }
 
-#
-# This populates the name, genre, path, website, and selected albums data
-#
 sub _get_discography {
     my $self = shift;
     
@@ -336,6 +376,116 @@ sub _get_discography {
     }
     $plist->delete;
 
+    $twig->purge;
+}
+
+sub _get_biography {
+    my $self = shift;
+    my $url  = shift;
+    
+    my $twig = $self->{_itms}->{_request}->url('biography', $self->id);
+    my $root = $twig->root;
+
+    my $sv = $root->first_child('ScrollView');
+    
+    my $tv = $sv->first_child('MatrixView')
+                ->first_child('View')
+                ->first_child('VBoxView')
+                ->first_child('TextView');
+    
+    for ($tv->next_siblings('TextView')) {
+        my $t = $_->first_child('SetFontStyle');
+        next if not defined $t;
+        
+        my $text;
+        if (defined $url) {
+            for ($t->children('ViewAlbum')) {
+                my $id = $_->att('id');
+                $_->del_atts;
+                $_->set_name('a');
+                $_->set_att(href => "$url$id");
+                $_->set_att(class => 'itms-album');
+                $_->set_text($_->trimmed_text);
+            }
+            $text = $t->xml_string;
+        } else {
+            $text = $t->xml_text;
+        }
+        
+        # Chop surrounding whitespace
+        $text =~ s/^\s*//;
+        $text =~ s/\s*$//;
+        
+        push @{$self->{biography}}, $text
+            unless $text eq '' or $text eq 'Biography';
+    }
+    
+    $sv->delete;
+    $twig->purge;
+}
+
+sub _get_influential_albums {
+    my $self = shift;
+
+    my $twig = $self->{_itms}->{_request}->url('influencers', $self->id);
+    my $root = $twig->root;
+
+    my $sv = $root->first_child('ScrollView');
+    
+    my $mv = $sv->first_child('MatrixView')
+                ->first_child('View')
+                ->first_child('MatrixView')
+                ->first_child('VBoxView')
+                ->first_child('MatrixView');
+    
+    if (defined $mv) {
+        for my $hbox ($mv->children('HBoxView')) {
+            for my $vbox ($hbox->children('VBoxView')) {
+                my $goto = $vbox->first_child('MatrixView')
+                                ->first_child('GotoURL');
+
+                next if not defined $goto;
+
+                my %data = (
+                    title => $goto->att('draggingName'),
+                );
+                
+                if (my $pic = $goto->first_child('PictureView')) {
+                    $data{thumb} = {
+                        height => $pic->att('height'),
+                        width  => $pic->att('width'),
+                        url    => $pic->att('url'),
+                    };
+                }
+                
+                my ($id) = $goto->att('url') =~ /playListId=(\d+)\z/;
+                
+                my $artist = $vbox->first_child('MatrixView')
+                                  ->first_child('VBoxView')
+                                  ->first_child('TextView')
+                                  ->first_child('SetFontStyle')
+                                  ->first_child('GotoURL');
+                
+                if (defined $artist) {
+                    my ($aid) = $artist->att('url') =~ /artistId=(\d+)\z/;
+                    
+                    $data{artist} = $self->{_itms}->get_artist(
+                                        $aid,
+                                        name => $artist->trimmed_text,
+                                    );
+                    
+                }
+                
+                push @{$self->{influences}},
+                     $self->{_itms}->get_album(
+                            $id,
+                            %data,
+                     );
+            }
+        }
+    }
+    
+    $sv->delete;
     $twig->purge;
 }
 

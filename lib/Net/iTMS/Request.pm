@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -47,11 +47,6 @@ are:
 
 =over 24
 
-=item C<< tmpdir => '/some/path' >>
-
-Used to specify the path to the directory where temporary files should be
-created.  Defaults to L<File::Temp>'s default.
-
 =item C<< debug => 0 or 1 >>
 
 If set to a true value, debug messages to be printed to STDERR.
@@ -76,7 +71,6 @@ sub new {
     return bless {
         error   => '',
         debug   => defined $opt{debug} ? $opt{debug} : 0,
-        tmpdir  => defined $opt{tmpdir} ? $opt{tmpdir} : undef,
         show_xml=> defined $opt{show_xml} ? $opt{show_xml} : 0,
         _ua     => $ua,
         _parser => 'XML::Twig',
@@ -248,41 +242,16 @@ sub _fetch_data {
 sub _gunzip_data {
     my ($self, $data) = @_;
     
-    # Write gzipped data to temporary file
-    my $template = 'net-itms.XXXXXXXXX';
-    my $dir = defined $self->{tmpdir}
-                ? $self->{tmpdir}
-                : '.';
-    
-    use File::MkTemp qw(mkstempt);
-    
-    $self->_debug('Writing gzipped data to temp file...');
-    
-    my ($fh, $fname) = mkstempt($template, $dir);
-    binmode $fh;    # For win32 users
-    print $fh $data;
-    $fh->close;
-        
     # Use Compress::Zlib to decompress it
-    use Compress::Zlib qw(gzopen Z_STREAM_END);
+    use Compress::Zlib qw();
     
-    my $gz = gzopen("$dir/$fname", 'rb')
-                or return $self->_set_error('Open of _gunzip_data tmpfile failed!');
-    
-    my ($xml, $buffer);
+    my $xml = Compress::Zlib::memGunzip($data);
 
-    $xml .= $buffer
-        while $gz->gzread($buffer) > 0;
-
-    if ($gz->gzerror != Z_STREAM_END) {
+    if (not defined $xml) {
         return $self->_set_error('Error while uncompressing gzipped data: "',
-                                    $gz->gzerror, '"');
+                                    $Compress::Zlib::gzerrno, '"');
     }
-    $gz->gzclose;
-    
-    $self->_debug('Removing tmpfile...');
-    unlink "$dir/$fname";
-    
+
     return $xml;
 }
 

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use Net::iTMS::Error;
 
@@ -392,7 +392,7 @@ sub _get_basic_info {
                     explicit    => $data{explicit},
                     comments    => $data{comments},
                     copyright   => $data{copyright},
-                    preview_url => $data{previewUrl},
+                    preview_url => $data{previewURL},
                     released    => $data{releaseDate},
                     price       => $data{priceDisplay},
                     vendor      => $data{vendorId},
