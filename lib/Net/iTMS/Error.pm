@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '0.01';
+$VERSION = '0.11';
 
 use Exporter::Lite;
 @EXPORT = qw(error _debug _set_error);
@@ -55,8 +55,8 @@ sub _set_error {
 Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
+Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
+of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons

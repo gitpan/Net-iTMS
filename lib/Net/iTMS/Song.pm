@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use Net::iTMS::Error;
 
@@ -90,7 +90,7 @@ sub new {
 =cut
 sub id          { return $_[0]->{id} }
 sub title       { return $_[0]->{title} }
-sub name        { return $_[0]->title }
+sub name        { return $_[0]->{title} }
 sub artist      { return $_[0]->{artist} }
 sub album       { return $_[0]->{album} }
 sub genre       { return $_[0]->{genre} }
@@ -113,8 +113,8 @@ sub price       { return $_[0]->{price} }
 Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
+Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
+of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons

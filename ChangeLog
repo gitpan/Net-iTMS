@@ -1,3 +1,9 @@
+0.10 -> 0.11
+
+    * Copyright regex fixes in Album.pm and Search.pm
+
+    * Minor bug fixes in album parsing when the album is an audiobook
+
 0.04 -> 0.10
 
     * HUGE rearrangement/rewrite of code.  Refactored by creating Request,

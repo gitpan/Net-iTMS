@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use Net::iTMS::Error;
 
@@ -34,9 +34,9 @@ associated data.  If a piece of information hasn't been fetched from the
 iTMS, it will transparently fetch and store it for later use before
 returning.
 
-If any method, excepting C<id> and C<thumb>, is called, the information
-for the others will be fetched in the same request.  This means, for
-these methods, the first call to one will have a time hit for the
+If any method, excepting C<id>, C<record_label>, and C<thumb>, is called,
+the information for the others will be fetched in the same request.  This
+means, for these methods, the first call to one will have a time hit for the
 HTTP request, but subsequent calls won't.
 
 =head2 Methods
@@ -95,13 +95,7 @@ are for the album's cover.
 =item thumb
 
 Returns a hashref with the keys C<url>, C<width>, and C<height> which
-are for the thumbnail of the album's cover.
-
-=item path
-
-Returns an arrayref of hashrefs representing the album's "path" in the iTMS.
-The hashrefs contain the name of the node in the path and the iTMS URL of that
-node.
+are for the thumbnail of the album's cover (if available).
 
 =item tracks
 
@@ -109,6 +103,24 @@ node.
 
 Returns an array or arrayref (depending on context) of L<Net::iTMS::Song> objects
 representing the tracklist of the album (in order of track number).
+
+=item total_songs
+
+Returns the total number of songs on the album available from the iTMS.
+
+=item released
+
+Returns the release date of the album (if available).
+
+=item copyright
+
+Returns the copyright information for the album (if available).
+
+=item path
+
+Returns an arrayref of hashrefs representing the album's "path" in the iTMS.
+The hashrefs contain the name of the node in the path and the iTMS URL of that
+node.
 
 =cut
 sub id { return $_[0]->{id} }
@@ -148,6 +160,25 @@ sub thumb {
     return $self->{thumb};
 }
 
+sub record_label {
+    my $self = shift;
+    return $self->{record_label};
+}
+
+sub copyright {
+    my $self = shift;
+    $self->_get_basic_info
+        if not exists $self->{copyright};
+    return $self->{copyright};
+}
+
+sub released {
+    my $self = shift;
+    $self->_get_basic_info
+        if not exists $self->{released};
+    return $self->{released};
+}
+
 sub tracks {
     my $self = shift;
     $self->_get_basic_info
@@ -156,6 +187,13 @@ sub tracks {
 }
 
 sub songs { return $_[0]->tracks }
+
+sub total_songs {
+    my $self = shift;
+    $self->_get_basic_info
+        if not exists $self->{total_songs};
+    return $self->{total_songs};
+}
 
 sub info {
     my $self = shift;
@@ -231,7 +269,14 @@ sub _get_basic_info {
     
     $pic->delete;
     $album->delete;
-    
+
+    if ($root->att('genreId') == 50000024) {
+        # have to bail for now
+        $sv->delete;
+        $twig->purge;
+        return;
+    }
+
     #
     # Artist
     #
@@ -257,14 +302,23 @@ sub _get_basic_info {
     
     #
     # Info
-    #        
+    #
     for my $text ($sv->first_child('MatrixView')
                      ->first_child('VBoxView')
                      ->first_child('MatrixView')
                      ->first_child('VBoxView')
                      ->children('TextView')) {
         if ($text->contains_only_text and $text->trimmed_text ne '') {
-            push @{$self->{info}}, $text->trimmed_text;
+            my $val = $text->trimmed_text;
+            push @{$self->{info}}, $val;
+            
+            $val =~ s/^\s*//;
+            $val =~ s/\s*$//;
+            
+            if    ($val =~ s/^Release Date:\s*//) { $self->{released}    = $val; }
+            elsif ($val =~ s/^Total Songs:\s*//)  { $self->{total_songs} = $val; }
+            elsif ($val =~ s/^Genre:\s*//)        { $self->{genre}{name} = $val; }
+            elsif ($val =~ s/^.+\s*(?>\d{4})//)   { $self->{copyright}   = $val; }
         }
     }
     
@@ -305,7 +359,9 @@ sub _get_basic_info {
         }
 
         $data{releaseDate} =~ s/A-Za-z//g;
-        
+        $data{copyright}   =~ s/^.+\s*(?>\d{4})//;
+        $data{copyright}   =~ s/\s*$//;
+                
         push @{$self->{tracks}},
              $self->{_itms}->get_song(
                     $data{songId},
@@ -332,6 +388,9 @@ sub _get_basic_info {
     }
     $plist->delete;
     $twig->purge;
+    
+    $self->{total_songs} = $self->{tracks}[0]{count}
+        if not $self->{total_songs};
 }
 
 =back
@@ -341,8 +400,8 @@ sub _get_basic_info {
 Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
+Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
+of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons

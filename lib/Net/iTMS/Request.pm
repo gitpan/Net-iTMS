@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -281,8 +281,8 @@ sub _set_request_headers {
 Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
+Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
+of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons
