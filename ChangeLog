@@ -1,3 +1,9 @@
+0.14 -> 0.15
+
+    * Made sure all uses of next_sibling (from XML::Twig) were qualified
+      with a condition to avoid breaking on some iTMS XML with later versions
+      of XML::Twig
+
 0.13 -> 0.14
 
     * Bugfixes in advanced search and artist parsing and general

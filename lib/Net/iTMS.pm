@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use Net::iTMS::Error;
 use Net::iTMS::Request;

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 use Net::iTMS::Error;
 
@@ -364,7 +364,7 @@ sub _get_discography {
     for my $dict ($plist->children('dict')) {
         my %data;
         for my $key ($dict->children('key')) {
-            $data{$key->trimmed_text} = $key->next_sibling->trimmed_text;
+            $data{$key->trimmed_text} = $key->next_sibling('#ELT')->trimmed_text;
         }
         
         push @{$self->{discography}},
