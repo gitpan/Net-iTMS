@@ -1,0 +1,18 @@
+On *nix:
+
+    perl Build.PL
+    ./Build
+    ./Build test    (doesn't do anything right now, no tests defined)
+    ./Build install
+
+To install to a different directory (if you're not root, for example),
+use the
+
+    --install_path lib=~/lib/perl
+
+and/or
+
+    --install_path libdoc=~/man/man3
+
+options to the install step.  See the Module::Build doc for more
+information.

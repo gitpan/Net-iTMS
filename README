@@ -1,0 +1,6 @@
+Net::iTMS provides methods to interact with the iTunes Music Store
+in various ways.  Net::iTMS::XML provides methods to selectively
+extract information from the iTMS XML.  See the Net::iTMS doc for
+more information.
+
+Read INSTALL for how to install this package.

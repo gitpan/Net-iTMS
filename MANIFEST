@@ -1,0 +1,7 @@
+Build.PL
+INSTALL
+lib/Net/iTMS.pm
+lib/Net/iTMS/XML.pm
+MANIFEST			This list of files
+META.yml
+README
