@@ -1,0 +1,11 @@
+0.03a -> 0.04
+    
+    * Bug fixes in Net::iTMS::XML -- still are probably a bunch of edge
+      cases.
+    
+    * Changed method names in Net::iTMS -- NOT backwards compatible.
+
+0.01 -> 0.03a
+    
+    Undocumented except in Subversion.  If it really matters, email me,
+    or just use diff yourself.

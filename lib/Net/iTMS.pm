@@ -9,7 +9,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 use LWP::UserAgent;
 use HTTP::Request;
@@ -116,7 +116,6 @@ Does a simple search of the catalog.
 sub search_for {
     my ($self, $query) = @_;
     
-    # Decrypted, uncompressed XML is returned
     return $self->fetch_iTMS_info($self->_url('search') . $query);
 }
 
@@ -146,13 +145,13 @@ sub get_artist {
             : $self->_set_error('No artist ID passed.');
 }
 
-=item C<get_biography($artistId)>
+=item C<get_artist_biography($artistId)>
 
 Takes an artistId and fetches the artist's iTMS biography, if there
 is one.
 
 =cut
-sub get_biography {
+sub get_artist_biography {
     my ($self, $id) = @_;
     
     return $id
@@ -160,13 +159,13 @@ sub get_biography {
             : $self->_set_error('No artist ID passed.');
 }
 
-=item C<get_influencers($artistId)>
+=item C<get_artist_influencers($artistId)>
 
 Takes an artistId and fetches the artist's iTMS influencers, if there
 are any.
 
 =cut
-sub get_influencers {
+sub get_artist_influencers {
     my ($self, $id) = @_;
     
     return $id
@@ -174,13 +173,13 @@ sub get_influencers {
             : $self->_set_error('No artist ID passed.');
 }
 
-=item C<get_artist_albums($artistId)>
+=item C<get_artist_discography($artistId)>
 
 Takes an artistId and fetches all the albums (really a browseArtist
 request).
 
 =cut
-sub get_artist_albums {
+sub get_artist_discography {
     my ($self, $id) = @_;
     
     return $id
@@ -315,7 +314,6 @@ sub _fetch_iTMS_data {
         }
     }
     elsif ($opt->{gunzip}) {
-                $self->_debug('foo');
         $self->_debug('Uncompressing content...');
         
         return $self->_gunzip_data($res->content);
@@ -355,8 +353,8 @@ sub _gunzip_data {
         while $gz->gzread($buffer) > 0;
 
     if ($gz->gzerror != Z_STREAM_END) {
-        return $self->_set_error('Error while uncompressing gzipped data: ',
-                                    $gz->gzerror);
+        return $self->_set_error('Error while uncompressing gzipped data: "',
+                                    $gz->gzerror, '"');
     }
     $gz->gzclose;
     
@@ -396,13 +394,60 @@ sub _set_error {
 
 =back
 
+=head1 TODO / FUTURE DIRECTION
+
+I'm thinking of totally changing the public interface.
+
+The subclasses Net::iTMS::Album, Net::iTMS::Artist, Net::iTMS::Song, et al.
+would represent individual artists, albums, and songs.
+
+Code would then look like:
+
+    my $iTMS = Net::iTMS->new;
+
+    my $artist = $iTMS->get_artist(123456);
+    # or maybe...
+    my $artist = $iTMS->find_artist('Elliott Smith');
+
+    print "Artist: ", $artist->name, "\n";
+
+    for my $album ($artist->discography) {
+        print $album->title, "(", $album->year, ")\n";
+
+        for my $track ($album->tracks) {    # also $album->songs
+            print "\t ", $track->number, ": ", $track->title, "\n";
+        }
+    }
+
+instead of
+
+    my $iTMS = Net::iTMS->new;
+
+    my $artist = $iTMS->get_artist(123456);
+    print "Artist: ", $artist->{name}, "\n";
+    
+    for my $album ($iTMS->get_artist_discography(123456)) {
+        print $album->{playlistName}, ..., "\n";
+        
+        my $tracks = $iTMS->get_album($album->{playlistId})
+                          ->genericPlist;
+        
+        for my $track (@$tracks) {
+            print "\t ", $track->{trackNumber}, ": ", $track->{songName}, "\n";
+        }
+    }
+    
+Could this be made B<efficient> -- that is, minimal # of HTTP requests?
+Would it require a major rewrite of existing XML munging code?  It would
+certainly be easier to work with.
+
 =head1 LICENSE
 
 Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/1.0/>
+license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 require XML::Twig;
 
@@ -79,20 +79,10 @@ sub new {
     
     return bless {
         twig => $twig,
-        _dispatch => {
-            album   => \&_parse_album,
-            search  => \&_parse_search,
-        },
         %data,
     }, $class;
 }
 
-=item C<< parse >>
-
-Included for compatibility reasons.  Returns the object it was called from
-for convenience of using this module via L<Net::iTMS>.
-
-=cut
 sub parse {
     return shift;
 }
@@ -104,7 +94,7 @@ Returns a string containing the value of the XML document's pageType attribute.
 =cut
 sub pageType {
     my $self = shift;
-    return $self->root->att('pageType');
+    return $self->{twig}->root->att('pageType');
 }
 
 =item C<< Path >>
@@ -122,7 +112,9 @@ sub Path {
                         : 1;
     
     # Get information about the genre (Path)
-    my $path      = $root->first_child('Path');
+    my $path      = $root->first_child('Path')
+                        or return [ ];
+
     my @children  = $path->children('PathElement');
     my $info      = [ ];
     
@@ -383,11 +375,9 @@ sub artist {
     my $SV = $root->first_child('ScrollView');
 
     # Artist name
-    $info->{name} = $SV->first_child('MatrixView')
-                       ->first_child('View')
-                       ->first_child('MatrixView')
-                       ->first_child('TextView')
-                       ->trimmed_text;
+    $info->{name} = $root->first_child('Path')
+                         ->last_child('PathElement')
+                         ->att('displayName');
     
     # Website URL
     my $website = $SV->first_child('MatrixView')
@@ -643,7 +633,7 @@ Copyright 2004, Thomas R. Sibley.
 
 This work is licensed under the Creative Commons
 Attribution-NonCommercial-ShareAlike License. To view a copy of this
-license, visit L<http://creativecommons.org/licenses/by-nc-sa/1.0/>
+license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
 or send a letter to:
 
     Creative Commons

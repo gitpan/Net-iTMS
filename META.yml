@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name: Net-iTMS
-version: 0.03a
+version: 0.04
 author:
   - Thomas Sibley, http://zulutango.org:82/
 abstract: |-
@@ -21,8 +21,8 @@ conflicts: {}
 provides:
   Net::iTMS:
     file: lib/Net/iTMS.pm
-    version: 0.08
+    version: 0.09
   Net::iTMS::XML:
     file: lib/Net/iTMS/XML.pm
-    version: 0.05
+    version: 0.06
 generated_by: Module::Build version 0.22
