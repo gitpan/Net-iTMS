@@ -2,9 +2,10 @@ use Module::Build;
 
 Module::Build->new(
     module_name         => 'Net::iTMS',
-    dist_version        => '0.01',
+    dist_version        => '0.01a',
     dist_author         => 'Thomas Sibley, http://zulutango.org:82/',
     dist_abstract       => 'For interacting with and retrieving information from the iTunes Music Store',
+    license             => 'unrestricted',
 
     # I don't know the earliest module versions that will
     # work... sorry

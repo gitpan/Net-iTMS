@@ -1,11 +1,11 @@
 --- #YAML:1.0
 name: Net-iTMS
-version: 0.01
+version: 0.01a
 author:
   - Thomas Sibley, http://zulutango.org:82/
 abstract: |-
   For interacting with and retrieving information from the iTunes Music Store
-license: unknown
+license: unrestricted
 requires:
   Compress::Zlib: 0
   Crypt::CBC: 0
