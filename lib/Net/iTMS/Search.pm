@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use Net::iTMS::Error;
 
@@ -101,6 +101,15 @@ sub _get_results {
     my $twig = $self->{_itms}->{_request}->url('search', $self->{query});
     my $root = $twig->root;
     
+    $self->_get_results_albums($root);
+    $self->_get_results_tracks($root);
+
+    $twig->purge;
+}
+
+sub _get_results_albums {
+    my ($self, $root) = @_;
+
     #
     # Albums
     #
@@ -168,7 +177,11 @@ sub _get_results {
     }
     
     $sv->delete;
+}
 
+sub _get_results_tracks {
+    my ($self, $root) = @_;
+    
     #
     # Tracks
     #
@@ -219,9 +232,8 @@ sub _get_results {
                     vendor      => $data{vendorId},
              );
     }
+    
     $plist->delete;
-
-    $twig->purge;
 }
 
 =back
@@ -230,14 +242,7 @@ sub _get_results {
 
 Copyright 2004, Thomas R. Sibley.
 
-This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
-of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
-or send a letter to:
-
-    Creative Commons
-    559 Nathan Abbott Way
-    Stanford, California 94305, USA.
+You may use, modify, and distribute this package under the same terms as Perl itself.
 
 =head1 AUTHOR
 

@@ -6,7 +6,7 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use Net::iTMS::Error;
 use Net::iTMS::Request;
@@ -15,6 +15,7 @@ use Net::iTMS::Album;
 use Net::iTMS::Song;
 use Net::iTMS::Genre;
 use Net::iTMS::Search;
+use Net::iTMS::Search::Advanced;
 
 =head1 NAME
 
@@ -50,9 +51,9 @@ which is available through the C<error> method.
 
 =over 12
 
-=item C<< new([ debug => 1, [...] ]) >>
+=item C<< new(debug => 1, ...) >>
 
-Takes an argument list of C<key => value> pairs.  The options available
+Takes an argument list of optional C<key => value> pairs.  The options available
 are:
 
 =over 24
@@ -69,7 +70,8 @@ If set to a true value, debug messages to be printed to STDERR.
 =item C<< show_xml => 0 or 1 >>
 
 If set to a true value, L<Net::iTMS::Request> will print to STDERR the XML
-fetched during each request.
+fetched during each request.  The C<debug> option must also be set to true
+for the XML to print.
 
 =back
 
@@ -137,18 +139,24 @@ sub get_song {
             : $self->_set_error('No song ID passed.');
 }
 
-=item C<search_for($terms)>
+=item C<search_for($query)>
 
-Takes a search string (query) and returns a L<Net::iTMS::Search>
-object.
+If C<$query> is a hashref, this method executes an advanced search using the
+hashref and returns a L<Net::iTMS::Search::Advanced> object.
+
+Otherwise, this method assumes C<$query> to be a string and executes a simple
+search using the string and returns a L<Net::iTMS::Search> object.
 
 =cut
 sub search_for {
     my ($self, $query, %opt) = @_;
 
-    return $query
-            ? Net::iTMS::Search->new($self, $query, %opt)
-            : $self->_set_error('No terms passed.');
+    return $self->_set_error('No query passed.')
+        if not $query;
+
+    return ref $query eq 'HASH'
+            ? Net::iTMS::Search::Advanced->new($self, $query, %opt)
+            : Net::iTMS::Search->new($self, $query, %opt);
 }
 
 =back
@@ -185,14 +193,7 @@ L<https://rt.cpan.org/NoAuth/ReportBug.html?Queue=Net-iTMS>.
 
 Copyright 2004, Thomas R. Sibley.
 
-This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
-of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
-or send a letter to:
-
-    Creative Commons
-    559 Nathan Abbott Way
-    Stanford, California 94305, USA.
+You may use, modify, and distribute this package under the same terms as Perl itself.
 
 =head1 AUTHOR
 

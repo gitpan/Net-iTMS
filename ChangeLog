@@ -1,3 +1,11 @@
+0.11 -> 0.12
+    
+    * Added advanced searching
+    
+    * Artist, album, song, and genre objects will now stringify to the name
+      of the artist, album, song, or genre instead of the Package=HASH(0x8172b34)
+      crap
+
 0.10 -> 0.11
 
     * Copyright regex fixes in Album.pm and Search.pm

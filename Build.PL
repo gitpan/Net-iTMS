@@ -2,10 +2,10 @@ use Module::Build;
 
 Module::Build->new(
     module_name         => 'Net::iTMS',
-    dist_version        => '0.11',
+    dist_version        => '0.12',
     dist_author         => 'Thomas Sibley, http://zulutango.org:82/',
-    dist_abstract       => 'Interface to the information within the iTunes Music Store (iTMS)',
-    license             => 'unrestricted',
+    dist_abstract       => 'Interface to the iTunes Music Store (iTMS)',
+    license             => 'perl',
 
     # I don't know the earliest module versions that will
     # work... sorry
@@ -19,6 +19,10 @@ Module::Build->new(
         'Compress::Zlib'    => 0,
         'XML::Twig'         => 0,
         'Exporter::Lite'    => 0,
+        'URI::Escape'       => 0,
     },    
-    create_makefile_pl  => 'passthrough',
+    build_requires => {
+        'Test::More'        => 0,
+    },
+    create_makefile_pl  => 'traditional',
 )->create_build_script;

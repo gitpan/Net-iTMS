@@ -9,10 +9,12 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use LWP::UserAgent;
 use HTTP::Request;
+
+use URI::Escape qw//;
 
 use Crypt::CBC;
 use Crypt::Rijndael;
@@ -57,7 +59,8 @@ If set to a true value, debug messages to be printed to STDERR.
 =item C<< show_xml => 0 or 1 >>
 
 If set to a true value, the XML fetched during each request will printed
-to STDERR.
+to STDERR.  The C<debug> option must also be set to true for the XML to
+print.
 
 =back
 
@@ -80,6 +83,7 @@ sub new {
         _url    => {
             search => 'http://phobos.apple.com/WebObjects/MZSearch.woa/wa/com.apple.jingle.search.DirectAction/search?term=',
             viewAlbum => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewAlbum?playlistId=',
+            advancedSearch => 'http://phobos.apple.com/WebObjects/MZSearch.woa/wa/advancedSearchResults?',
             # Albums ordered by best-sellers
             viewArtist => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/viewArtist?sortMode=2&artistId=',
             biography => 'http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.app.store.DirectAction/biography?artistId=',
@@ -129,15 +133,28 @@ cases.
 
 =cut
 sub url {
-    my ($self, $url, $arg) = @_;
+    my ($self, $url, $args) = @_;
     
     my $opt = defined $_[3] ? $_[3] : { };
     
     $url = $self->{_url}->{$url}
         unless $url =~ /^http/;
     
-    $url .= $arg
-        if defined $arg;
+    if (defined $args) {
+        if (ref $args eq 'HASH') {
+            my $i = 0;
+            for my $key (keys %$args) {
+                $url .= ($i < 1 ? "" : "&")
+                        . URI::Escape::uri_escape($key)
+                        . "="
+                        . URI::Escape::uri_escape($args->{$key});
+                $i++;
+            }
+        }
+        else {
+            $url .= URI::Escape::uri_escape($args);
+        }
+    }
     
     my $xml = $self->_fetch_data($url, $opt)
                 or return undef;
@@ -155,6 +172,8 @@ sub _fetch_data {
     
     return $self->_set_error('No URL specified!')
             if not $url;
+    
+    $self->_debug('URL: ' . $url);
     
     my $opt = { gunzip => 1, decrypt => 1 };
     if (defined $userOpt) {
@@ -280,14 +299,7 @@ sub _set_request_headers {
 
 Copyright 2004, Thomas R. Sibley.
 
-This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
-of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
-or send a letter to:
-
-    Creative Commons
-    559 Nathan Abbott Way
-    Stanford, California 94305, USA.
+You may use, modify, and distribute this package under the same terms as Perl itself.
 
 =head1 AUTHOR
 

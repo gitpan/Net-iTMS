@@ -6,9 +6,21 @@ use warnings;
 use strict;
 
 use vars '$VERSION';
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 use Net::iTMS::Error;
+
+use overload
+	'""'     => sub { shift->as_string },
+	fallback => 1;
+
+sub as_string {
+    my $self = shift;
+    
+    return defined $self
+            ? $self->name
+            : undef;
+}
 
 =head1 NAME
 
@@ -333,14 +345,7 @@ sub _get_discography {
 
 Copyright 2004, Thomas R. Sibley.
 
-This work is licensed under the Creative Commons
-Attribution-NonCommercial-ShareAlike License revision 2.0.  To view a copy
-of this license, visit L<http://creativecommons.org/licenses/by-nc-sa/2.0/>
-or send a letter to:
-
-    Creative Commons
-    559 Nathan Abbott Way
-    Stanford, California 94305, USA.
+You may use, modify, and distribute this package under the same terms as Perl itself.
 
 =head1 AUTHOR
 
